@@ -1,0 +1,3 @@
+---
+# vars file for dockerfile-integration
+ PROJECT_HOME: "/opt/app"

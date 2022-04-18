@@ -1,0 +1,83 @@
+---
+   - name: install all the build essentials
+     apt:
+      name:
+       - build-essential
+       - ca-certificates
+       - curl
+       - gettext
+       - git
+       - gunicorn
+       - libbz2-dev
+       - libcairo2
+       - libcurl4-openssl-dev
+       - libffi-dev
+       - liblzma-dev
+       - libpango-1.0-0
+       - libpangocairo-1.0-0
+       - libreadline-dev
+       - libsqlite3-dev
+       - libpcre3
+       - libpcre3-dev
+       - llvm
+       - make
+       - net-tools
+       - nginx
+       - openssl
+       - python3-dev
+       - postgresql-client
+       - shared-mime-info
+       - redis-server
+       - wget
+       - zlib1g-dev
+       - virtualenv
+       - pip
+      state: latest
+      update_cache: yes
+   - name: vars file contents
+     include_vars: main.yml
+   - name: Install package
+     apt:
+      name:
+       - libcurl4-nss-dev
+       - libssl-dev
+      state: latest
+      update_cache: yes
+   - name: Adding hydrostats user with sudo permissions
+     user: name=hydrostats state=present createhome=yes
+     become: yes
+     become_method: sudo
+   - name: Check for Python
+     raw: test -e /usr/bin/python
+     changed_when: false
+     failed_when: false
+     register: check_python
+   - name: Creating a directory
+     shell:
+      cmd: mkdir /opt/app/
+      creates: /opt/app/
+   - name: shell commands
+     shell:
+      cmd: mkdir -p /requirements/ && touch /requirements/production.txt
+      creates: /requirements/production.txt
+
+   - name: activate the virtual environment
+     shell: virtualenv "{{ PROJECT_HOME }}/env"
+              creates="{{ PROJECT_HOME }}/env/bin/activate"
+
+   - name: Installing the requirements
+     shell: /opt/app/env/bin/pip install -r /requirements/production.txt
+
+ #  - name: Copying the files to remote machine
+ #    become: yes
+ #    copy:
+ #      src: /etc/ansible/app
+ #     dest: /opt/app
+   - name: Copying the files to destination 
+     template: 
+       src: file.txt
+       dest: /opt/app
+
+   - name: shell commands
+     shell: mkdir -p /opt/app/logs && chown -R www-data /opt/app/logs && chmod 777 /opt/app/logs
+
