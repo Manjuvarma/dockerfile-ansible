@@ -1,5 +1,8 @@
+# This file should run as playbook in /etc/ansible
 ---
 - hosts: localhost
   remote_user: root
+  become: yes
+  become_method: sudo
   roles:
     - dockerfile-integration
